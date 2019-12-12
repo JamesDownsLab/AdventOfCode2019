@@ -12,6 +12,8 @@ class orbiter:
         self.parent = parent
 
     def grandparents(self):
+        if self.parent.id == 'COM':
+            return []
         grandparents = []
         parent = self.parent
         at_root = False
@@ -21,6 +23,12 @@ class orbiter:
             if parent.id == 'COM':
                 at_root = True
         return grandparents
+
+    def parents(self):
+        if self.parent == None:
+            return []
+        else:
+            return [self.parent] + self.grandparents()
 
 objects = {}
 for relationship in test_input:
@@ -33,37 +41,22 @@ for relationship in test_input:
         if objects[child].parent == None:
             objects[child].parent = objects[parent]
 
-print([o.id for o in objects.values()])
 
-orbits = 0
-for object in objects.values():
-    print(object.id)
-    if object.id == 'COM':
-        continue
-    at_root = False
-    while not at_root:
-        parent = object.parent
-        orbits += 1
-        object = parent
-        if parent.id == 'COM':
-            at_root = True
+print('Total orbits: ', sum([len(o.parents()) for o in objects.values()]))
 
-print(orbits)
+my_gp = objects['YOU'].parents()
+santa_gp = objects['SAN'].parents()
 
-
-my_gp = objects['YOU'].grandparents()
-santa_gp = objects['SAN'].grandparents()
-
-def first_common_grandparent(gp1, gp2):
+def first_common_parent(gp1, gp2):
     for gp_a in gp1:
         for gp_b in gp2:
             if gp_a == gp_b:
                 return gp_a
 
-common = first_common_grandparent(my_gp, santa_gp)
-print('Common: ', common)
+common = first_common_parent(my_gp, santa_gp)
 
 dist1 = my_gp.index(common)
 dist2 = santa_gp.index(common)
 
-print(dist1 + dist2)
+print('Number of transfers: ', dist1 + dist2)
+
