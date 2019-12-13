@@ -13,77 +13,90 @@ class IntcodeComputer:
         self.inputs = inputs
         self.inputs_used = 0
         self.return_outputs = return_outputs
+        self.i = 0
 
-    def process_code(self):
-        i = 0
-        while i < len(self.intcode):
-            opcode = self.intcode[i]
+    def run(self):
+        while self.i < len(self.intcode):
+            opcode = self.intcode[self.i]
             mode, parameter_modes = self.process_opcode(opcode)
-            if mode == 'Add':
-                first = self.get_parameter(i+1, parameter_modes[0])
-                second = self.get_parameter(i+2, parameter_modes[1])
-                pos = self.get_parameter(i+3, 'Immediate')
-                self.intcode[pos] = first + second
-                i += 4
-
-            elif mode == 'Multiply':
-                first = self.get_parameter(i + 1, parameter_modes[0])
-                second = self.get_parameter(i + 2, parameter_modes[1])
-                pos = self.get_parameter(i + 3, 'Immediate')
-                self.intcode[pos] = first * second
-                i += 4
-
-            elif mode == 'Input':
-                pos = self.get_parameter(i+1, 'Immediate')
-                input_value = self.get_next_input()
-                self.intcode[pos] = input_value
-                i += 2
-
-            elif mode == 'Output':
-                output = self.get_parameter(i+1, parameter_modes[0])
-                if self.return_outputs:
-                    return output
-                else:
-                    print(output)
-                i += 2
-
-            elif mode == 'JumpIfTrue':
-                first = self.get_parameter(i+1, parameter_modes[0])
-                second = self.get_parameter(i+2, parameter_modes[1])
-                if first != 0:
-                    i = second
-                else:
-                    i += 3
-            elif mode == 'JumpIfFalse':
-                first = self.get_parameter(i + 1, parameter_modes[0])
-                second = self.get_parameter(i + 2, parameter_modes[1])
-                if first == 0:
-                    i = second
-                else:
-                    i += 3
-            elif mode == 'LessThan':
-                first = self.get_parameter(i + 1, parameter_modes[0])
-                second = self.get_parameter(i + 2, parameter_modes[1])
-                pos = self.get_parameter(i + 3, 'Immediate')
-                self.intcode[pos] = 1 if first < second else 0
-                i += 4
-            elif mode == 'Equals':
-                first = self.get_parameter(i + 1, parameter_modes[0])
-                second = self.get_parameter(i + 2, parameter_modes[1])
-                pos = self.get_parameter(i + 3, 'Immediate')
-                self.intcode[pos] = 1 if first == second else 0
-                i += 4
-
-            elif mode == 'Halt':
+            if mode == 'Halt':
                 break
-            else:
-                print('error')
-                return 0
-        return self.intcode
+            # print(mode)
+            functions = {'Add': self.add,
+                         'Multiply': self.multiply,
+                         'Input': self.input,
+                         'Output': self.output,
+                         'JumpIfTrue': self.jumpiftrue,
+                         'JumpIfFalse': self.jumpiffalse,
+                         'LessThan': self.lessthan,
+                         'Equals': self.equal,
+                         'Halt': self.halt}
+
+            out = functions[mode](parameter_modes)
+            if out is not None:
+                return out
+
+    def add(self, modes):
+        first = self.get_parameter(self.i+1, modes[0])
+        second = self.get_parameter(self.i+2, modes[1])
+        pos = self.get_parameter(self.i+3, 'Immediate')
+        self.intcode[pos] = first + second
+        self.i += 4
+
+    def multiply(self, modes):
+        first = self.get_parameter(self.i + 1, modes[0])
+        second = self.get_parameter(self.i + 2, modes[1])
+        pos = self.get_parameter(self.i + 3, 'Immediate')
+        self.intcode[pos] = first * second
+        self.i += 4
+
+    def input(self, modes):
+        pos = self.get_parameter(self.i+1, 'Immediate')
+        input_value = self.get_next_input()
+        self.intcode[pos] = input_value
+        self.i += 2
+
+    def output(self, modes):
+        output = self.get_parameter(self.i+1, modes[0])
+        self.i += 2
+        return output
+
+    def jumpiftrue(self, modes):
+        first = self.get_parameter(self.i+1, modes[0])
+        second = self.get_parameter(self.i+2, modes[1])
+        if first != 0:
+            self.i = second
+        else:
+            self.i += 3
+
+    def jumpiffalse(self, modes):
+        first = self.get_parameter(self.i + 1, modes[0])
+        second = self.get_parameter(self.i + 2, modes[1])
+        if first == 0:
+            self.i = second
+        else:
+            self.i += 3
+
+    def lessthan(self, modes):
+        first = self.get_parameter(self.i+1, modes[0])
+        second = self.get_parameter(self.i+2, modes[1])
+        pos = self.get_parameter(self.i+3, 'Immediate')
+        self.intcode[pos] = 1 if first < second else 0
+        self.i += 4
+
+    def equal(self, modes):
+        first = self.get_parameter(self.i+1, modes[0])
+        second = self.get_parameter(self.i+2, modes[1])
+        pos = self.get_parameter(self.i+3, 'Immediate')
+        self.intcode[pos] = 1 if first == second else 0
+        self.i += 4
+
+    def halt(self, modes):
+        return 'HALT'
 
     def get_next_input(self):
         if self.inputs_used >= len(self.inputs):
-            input_value = input('Enter an integer input : ')
+            input_value = int(input('Enter an integer input : '))
         else:
             input_value = self.inputs[self.inputs_used]
         self.inputs_used += 1
@@ -129,7 +142,7 @@ def run_amp_circuit(intcode, inputs):
     output = 0
     for input_code in inputs:
         computer = IntcodeComputer(intcode, [input_code, output], return_outputs=True)
-        output = computer.process_code()
+        output = computer.run()
     return output
 
 def run_part_1():
@@ -147,19 +160,27 @@ def run_part_1():
 def run_part_2():
     intcode = read_intcode_input_file('input.txt')
     input_codes = [9, 8, 7, 6, 5]
-    # input_iterations = itertools.permutations(input_codes)
+    input_iterations = itertools.permutations(input_codes)
     outputs = []
-    computers = []
-    # for iteration in input_iterations:
-    computers = []
-    output = 0
-    for i, input_code in enumerate(input_codes):
-        computers.append(IntcodeComputer([i for i in intcode], [input_code, output], return_outputs=True))
-        output = computers[i].process_code()
-    for i in range(150):
-        computers[i%5].inputs += [input_codes[i%5], output]
-        output = computers[i%5].process_code()
-    print(output)
+    for iteration in input_iterations:
+        computers = []
+        output = 0
+        for i, input_code in enumerate(iteration):
+            computers.append(IntcodeComputer([i for i in intcode], [input_code, output], return_outputs=True))
+            output = computers[i].run()
+        finished = False
+        while not finished:
+            for i in range(5):
+                computers[i].inputs += [output]
+                out = computers[i].run()
+                if out is None:
+                    finished = True
+                    break
+                else:
+                    output = out
+        print(output)
+        outputs.append(output)
+    print('Max : ', max(outputs))
 
 
 
