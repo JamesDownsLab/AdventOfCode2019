@@ -53,3 +53,10 @@ def process_opcode(opcode):
 
 code = process_code(intcode)
 print(code)
+
+from intcode import read_intcode_input_file, IntcodeComputer
+
+code = read_intcode_input_file('input.txt')
+IC = IntcodeComputer(code, [])
+code = IC.run()
+print(code)
