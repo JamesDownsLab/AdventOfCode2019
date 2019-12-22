@@ -137,6 +137,9 @@ class IntcodeComputer:
                 p_modes.append(0)
         return self.opcode_instructions[int(mode)], [self.parameter_modes[p] for p in p_modes]
 
+    def add_inputs(self, additional_input):
+        self.inputs.append(additional_input)
+
 
 def read_intcode_input_file(file):
     with open(file, 'r') as f:
