@@ -99,7 +99,22 @@ void System::update_positions() {
     }
 }
 
-std::vector<std::pair<Moon, Moon>> get_pairs(std::vector<Moon> &moons) {
-    std::vector<std::pair<Moon, Moon>> result;
+int System::run_until_same() {
+    bool finished {false};
+    int step {0};
+    while (!finished){
+        step += 1;
+        run(1);
+        finished = check_equal();
+    }
+    return step;
+}
 
+bool System::check_equal() {
+    std::vector<bool> checks;
+    for (size_t i{0}; i<moons_.size(); i++){
+        checks.push_back(moons_[i].original_state());
+    }
+    std::vector<bool> test {true, true, true, true};
+    return checks == test;
 }

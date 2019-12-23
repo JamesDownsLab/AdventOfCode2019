@@ -42,10 +42,13 @@ void run(int steps);
 
 int energy();
 
+int run_until_same();
+
 private:
     void update_velocities();
     void update_positions();
     std::vector<std::pair<int, int>> pair_indices_;
+    bool check_equal();
 };
 
 

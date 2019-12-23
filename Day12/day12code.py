@@ -102,8 +102,8 @@ def read_input(file):
     return moons
 
 if __name__ == "__main__":
-    moons = read_input('input.txt')
-    # moons = TEST_MOONS
+    # moons = read_input('input.txt')
+    moons = TEST_MOONS
     system = System(moons)
     # system.run(steps=10000)
     # for moon in moons:
