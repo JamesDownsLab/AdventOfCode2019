@@ -69,16 +69,15 @@ int System::energy() {
 }
 
 void System::update_velocities() {
-    for (size_t i{0}; i<pair_indices_.size(); ++i){
-        auto& indices = pair_indices_[i];
-        Moon& moon1 = moons_[indices.first];
-        Moon& moon2 = moons_[indices.second];
+    for (size_t i{0}; i < pair_indices_.size(); ++i) {
+        auto &indices = pair_indices_[i];
+        Moon &moon1 = moons_[indices.first];
+        Moon &moon2 = moons_[indices.second];
 
         if (moon1.x_ > moon2.x_) {
             moon1.vx_ -= 1;
             moon2.vx_ += 1;
-        }
-        else if (moon1.x_ < moon2.x_){
+        } else if (moon1.x_ < moon2.x_) {
             moon1.vx_ += 1;
             moon2.vx_ -= 1;
         }
@@ -86,17 +85,15 @@ void System::update_velocities() {
         if (moon1.y_ > moon2.y_) {
             moon1.vy_ -= 1;
             moon2.vy_ += 1;
-        }
-        else if (moon1.y_ < moon2.y_){
+        } else if (moon1.y_ < moon2.y_) {
             moon1.vy_ += 1;
             moon2.vy_ -= 1;
         }
 
-        if (moon1.z_ > moon2.z_){
+        if (moon1.z_ > moon2.z_) {
             moon1.vz_ -= 1;
             moon2.vz_ += 1;
-        }
-        else if (moon1.z_ < moon2.z_){
+        } else if (moon1.z_ < moon2.z_) {
             moon1.vz_ += 1;
             moon2.vz_ -= 1;
         }
