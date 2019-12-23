@@ -26,9 +26,20 @@ int Moon::energy() {
 }
 
 bool Moon::original_state() {
-    std::vector<int> current {x_, y_, z_, vx_, vy_, vz_};
-    std::vector<int> initial {initialx_, initialy_, initialz_, 0, 0, 0};
-    return current == initial;
+    if (x_ == initialx_){
+        if (y_ == initialy_){
+            if (z_ == initialz_){
+                if (vx_ == 0){
+                    if (vy_ == 0){
+                        if (vz_ == 0){
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
 }
 
 
@@ -59,7 +70,7 @@ int System::energy() {
 
 void System::update_velocities() {
     for (size_t i{0}; i<pair_indices_.size(); ++i){
-        std::pair<int, int> indices = pair_indices_[i];
+        auto& indices = pair_indices_[i];
         Moon& moon1 = moons_[indices.first];
         Moon& moon2 = moons_[indices.second];
 
@@ -111,10 +122,10 @@ int System::run_until_same() {
 }
 
 bool System::check_equal() {
-    std::vector<bool> checks;
-    for (size_t i{0}; i<moons_.size(); i++){
-        checks.push_back(moons_[i].original_state());
+    for (Moon& moon : moons_){
+        if (!moon.original_state()){
+            return false;
+        }
     }
-    std::vector<bool> test {true, true, true, true};
-    return checks == test;
+    return true;
 }
