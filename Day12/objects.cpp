@@ -26,20 +26,8 @@ int Moon::energy() {
 }
 
 bool Moon::original_state() {
-    if (x_ == initialx_){
-        if (y_ == initialy_){
-            if (z_ == initialz_){
-                if (vx_ == 0){
-                    if (vy_ == 0){
-                        if (vz_ == 0){
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return false;
+    return x_ == initialx_ && y_ == initialy_ && z_ == initialz_ &&
+           vx_ == 0 && vy_ == 0 && vz_ == 0;
 }
 
 
