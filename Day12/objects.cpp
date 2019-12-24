@@ -13,6 +13,18 @@ initialy_ = y;
 initialz_ = z;
 }
 
+bool Moon::xsame() {
+    return x_ == initialx_ && vx_==0;
+}
+
+bool Moon::ysame() {
+    return y_ == initialy_ && vy_ == 0;
+}
+
+bool Moon::zsame() {
+    return z_ == initialz_ && vz_ == 0;
+}
+
 void Moon::update_positions() {
     x_ += vx_;
     y_ += vy_;
@@ -32,12 +44,6 @@ bool Moon::original_state() {
 
 
 System::System(std::vector<Moon> &moons) : moons_{moons}{
-    pair_indices_.emplace_back(0, 1);
-    pair_indices_.emplace_back(0, 2);
-    pair_indices_.emplace_back(0, 3);
-    pair_indices_.emplace_back(1, 2);
-    pair_indices_.emplace_back(1, 3);
-    pair_indices_.emplace_back(2, 3);
 }
 
 void System::run(int steps) {
@@ -45,6 +51,60 @@ void System::run(int steps) {
         update_velocities();
         update_positions();
     }
+}
+
+std::vector<int> System::run_each_axis() {
+    std::vector<int> output;
+    int steps = 0;
+    bool finished = false;
+    bool x_done = false;
+    bool y_done = false;
+    bool z_done = false;
+
+    while (!finished){
+        steps += 1;
+        run(1);
+        if (!x_done) {
+            bool all_same = true;
+            for (Moon moon : moons_){
+                if (!moon.xsame()){
+                    all_same = false;
+                }
+            }
+            if (all_same){
+                output.push_back(steps);
+                x_done = true;
+            }
+        }
+        if (!y_done) {
+            bool all_same = true;
+            for (Moon moon : moons_){
+                if (!moon.ysame()){
+                    all_same = false;
+                }
+            }
+            if (all_same){
+                output.push_back(steps);
+                y_done = true;
+            }
+        }
+        if (!z_done) {
+            bool all_same = true;
+            for (Moon moon : moons_){
+                if (!moon.zsame()){
+                    all_same = false;
+                }
+            }
+            if (all_same){
+                output.push_back(steps);
+                z_done = true;
+            }
+        }
+        if (x_done && y_done && z_done){
+            finished = true;
+        }
+    }
+    return output;
 }
 
 int System::energy() {
@@ -57,10 +117,11 @@ int System::energy() {
 }
 
 void System::update_velocities() {
-    for (size_t i{0}; i < pair_indices_.size(); ++i) {
-        auto &indices = pair_indices_[i];
-        Moon &moon1 = moons_[indices.first];
-        Moon &moon2 = moons_[indices.second];
+    for (size_t i{0}; i < pair_indices_.size(); i+=2) {
+        int index1 = pair_indices_[i];
+        int index2 = pair_indices_[i+1];
+        Moon &moon1 = moons_[index1];
+        Moon &moon2 = moons_[index2];
 
         if (moon1.x_ > moon2.x_) {
             moon1.vx_ -= 1;

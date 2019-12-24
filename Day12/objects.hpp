@@ -21,6 +21,10 @@ public:
 
     void update_positions();
 
+    bool xsame();
+    bool ysame();
+    bool zsame();
+
     int energy();
 
     bool original_state();
@@ -44,10 +48,13 @@ int energy();
 
 int run_until_same();
 
+std::vector<int> run_each_axis();
+
 private:
     void update_velocities();
     void update_positions();
-    std::vector<std::pair<int, int>> pair_indices_;
+//    std::vector<std::pair<int, int>> pair_indices_;
+    std::vector<int> pair_indices_ {0, 1, 0, 2, 0, 3, 1, 2, 1, 3, 2, 3};
     bool check_equal();
 };
 
