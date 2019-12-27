@@ -4,7 +4,7 @@ class IntcodeComputer:
                        7: 'LessThan', 8: 'Equals', 9: 'ChangeBase', 99: 'Halt'}
     parameter_modes = {0: 'Position', 1: 'Immediate', 2: 'Relative'}
 
-    def __init__(self, intcode, inputs, return_outputs=False):
+    def __init__(self, intcode, inputs, return_outputs=False, input_function=None):
         self.intcode = intcode
         self.size = len(self.intcode)
         self.intcode += [0 for i in range(10000000)]
@@ -13,6 +13,7 @@ class IntcodeComputer:
         self.return_outputs = return_outputs
         self.i = 0
         self.relative_base = 0
+        self.input_function = input_function
 
     def run(self):
         while self.i < len(self.intcode):
@@ -100,12 +101,16 @@ class IntcodeComputer:
         return 'HALT'
 
     def get_next_input(self):
-        if self.inputs_used >= len(self.inputs):
-            input_value = int(input('Enter an integer input : '))
+        if self.input_function is None:
+            if self.inputs_used >= len(self.inputs):
+                input_value = int(input('Enter an integer input : '))
+            else:
+                input_value = self.inputs[self.inputs_used]
+            self.inputs_used += 1
+            return input_value
         else:
-            input_value = self.inputs[self.inputs_used]
-        self.inputs_used += 1
-        return input_value
+            input_value = self.input_function()
+            return input_value
 
     def get_parameter(self, pos, mode, write_mode=False):
         pos = self.intcode[pos]
