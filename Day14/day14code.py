@@ -40,31 +40,50 @@ class Nanofactory:
 
     def __init__(self, recipes):
         self.recipes = recipes
-        self.orders = Queue()
-        self.supply = defaultdict(int)
+
 
     def make_fuel(self, amount):
-        self.orders.put(Ingredient(amount, "FUEL"))
+        orders = Queue()
+        supply = defaultdict(int)
+        orders.put(Ingredient(amount, "FUEL"))
         ore_needed = 0
-        while not self.orders.empty():
-            order = self.orders.get()
+        while not orders.empty():
+            order = orders.get()
             if order.name == "ORE":
                 ore_needed += order.quantity
-            elif order.quantity <= self.supply[order.name]:
-                self.supply[order.name] -= order.quantity
+            elif order.quantity <= supply[order.name]:
+                supply[order.name] -= order.quantity
             else:
-                amount_needed = order.quantity - self.supply[order.name]
+                amount_needed = order.quantity - supply[order.name]
                 recipe = self.recipes[order.name]
                 batches = ceil(amount_needed / recipe.product.quantity)
                 for ingredient in recipe.ingredients:
-                    self.orders.put(Ingredient(ingredient.quantity * batches, ingredient.name))
+                    orders.put(Ingredient(ingredient.quantity * batches, ingredient.name))
                     leftover_amount = batches * recipe.product.quantity - amount_needed
-                    self.supply[order.name] = leftover_amount
+                    supply[order.name] = leftover_amount
         return ore_needed
+
+    def possible_fuel(self, available_ore=1e12, bottom=0, top=1e12):
+        finished = False
+        while not finished:
+            estimate = (bottom + top) // 2
+            result = self.make_fuel(estimate) - available_ore
+            second_result = self.make_fuel(estimate + 1) - available_ore
+            if (result * second_result) < 0:
+                finished = True
+                maximum_fuel = estimate
+            elif result < 0:
+                bottom = estimate
+            else:
+                top = estimate
+        return maximum_fuel
 
 
 if __name__ == "__main__":
     reactions = read_input('input.txt')
     nanofactory = Nanofactory(reactions)
     required = nanofactory.make_fuel(1)
-    print(required)
+    print("Require ", required, " ore for 1 fuel")
+    available_ore = 1e12
+    maximum_fuel = nanofactory.possible_fuel(available_ore)
+    print(available_ore, " ore can provide ", maximum_fuel, " fuel")
