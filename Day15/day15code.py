@@ -1,8 +1,6 @@
 import intcode
-import random
 import matplotlib.pyplot as plt
 from queue import Queue
-from collections import defaultdict
 
 
 class Wall:
@@ -12,12 +10,11 @@ class Wall:
 
 
 class Corridor:
-    def __init__(self, x, y, approach, approach_tile):
+    def __init__(self, x, y, approach):
         self.x = x
         self.y = y
         # approach is the direction which is approached from
         options = [1, 2, 3, 4]
-        self.approach_tile = approach_tile
         self.backtrack = Queue(1)
         self.options = Queue(3)
         if approach == "N":
@@ -55,7 +52,7 @@ class RepairDroid:
     def map_corridors(self):
         x = 0
         y = 0
-        tile = Corridor(x, y, None, None)
+        tile = Corridor(x, y, None)
         self.corridors[(x, y)] = tile
         mapped = False
         while not mapped:
@@ -70,7 +67,7 @@ class RepairDroid:
                     self.walls[(new_x, new_y)] = Wall(new_x, new_y)
                 elif output > 0:
                     if (new_x, new_y) not in self.corridors:
-                        tile = Corridor(new_x, new_y, self.get_approach(next_move), tile)
+                        tile = Corridor(new_x, new_y, self.get_approach(next_move))
                         self.corridors[(new_x, new_y)] = tile
                     else:
                         tile = self.corridors[(new_x, new_y)]
@@ -80,14 +77,13 @@ class RepairDroid:
                     y = new_y
         return oxygen
 
-    def distance_to_oxygen(self, oxygen):
-        tile = self.corridors[oxygen]
-        distance = 0
-        while True:
-            distance += 1
-            tile = tile.approach_tile
-            if tile.x == 0 and tile.y == 0:
-                return distance
+    def path_to_oxygen(self, oxygen):
+        paths = self.graph.find_all_paths(oxygen, (0, 0))
+        path_lengths = [len(p) for p in paths]
+        shortest = min(path_lengths)
+        for path, length in zip(paths, path_lengths):
+            if length == shortest:
+                return path
 
     def get_new_xy(self, command, x, y):
         new = {1: (x, y + 1), 2: (x, y - 1), 3: (x-1, y), 4: (x+1, y)}
@@ -134,22 +130,14 @@ class RepairDroid:
         return furthest
 
 
-def plot_tiles(tiles):
-    wall_x = []
-    wall_y = []
-    for tile in tiles.values():
-        wall_x.append(tile.x)
-        wall_y.append(tile.y)
-    plt.plot(wall_x, wall_y, 'x')
-    plt.plot(oxygen[0], oxygen[1], 'o')
-    plt.show()
-
-def plot_map(walls, oxygen):
+def plot_map(walls, oxygen, path):
     x, y = zip(*[[w.x, w.y] for w in walls.values()])
     plt.plot(x, y, 'x')
     plt.plot(oxygen[0], oxygen[1], 'o')
     plt.plot(0, 0, '+')
-    plt.legend(['Walls', 'oxygen', 'origin'])
+    pathx, pathy = zip(*path)
+    plt.plot(pathx, pathy)
+    plt.legend(['Walls', 'oxygen', 'origin', 'path'])
     plt.show()
 
 
@@ -239,11 +227,9 @@ if __name__ == "__main__":
     computer = intcode.IntcodeComputer(intcode.read_intcode_input_file('input.txt'), [])
     repair_droid = RepairDroid(computer)
     oxygen = repair_droid.map_corridors()
-    distance = repair_droid.distance_to_oxygen(oxygen)
-    print(oxygen)
-    print(distance)
-    plot_tiles(repair_droid.walls)
-    print(repair_droid.generate_graph(oxygen))
-    # print(len(repair_droid.shortest_path(oxygen, (0, 0))))
+    repair_droid.generate_graph(oxygen)
+    path_to_oxygen = repair_droid.path_to_oxygen(oxygen)
+    print("Distance to oxygen = ", len(path_to_oxygen)-1)
     minutes = repair_droid.fill_oxygen(oxygen) - 1
     print("mintutes to fill oxygen : ", minutes)
+    plot_map(repair_droid.walls, oxygen, path_to_oxygen)
